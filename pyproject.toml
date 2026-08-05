@@ -9,6 +9,7 @@ description = "Drop-in EU AI Act compliance middleware for agentic AI frameworks
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
+authors = [{ name = "Navik Modi", email = "navikkumarmodi@googlemail.com" }]
 keywords = ["eu-ai-act", "compliance", "agentic-ai", "governance", "audit", "langchain"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -21,8 +22,15 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/NavikkumarModi/AIActGuard"
+Issues = "https://github.com/NavikkumarModi/AIActGuard/issues"
+Changelog = "https://github.com/NavikkumarModi/AIActGuard/blob/main/CHANGELOG.md"
+
 [project.optional-dependencies]
 langchain = ["langchain-core>=0.2"]
+crewai = ["crewai>=0.70"]
+claude-agent-sdk = ["claude-agent-sdk>=0.1"]
 dev = ["pytest>=8.0"]
 
 [tool.hatch.build.targets.wheel]

@@ -35,6 +35,13 @@ class AIActGuardCallbackHandler(BaseCallbackHandler):
         agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
     """
 
+    # LangChain's CallbackManager swallows exceptions raised inside a
+    # callback by default (it only logs a warning) unless the handler opts
+    # in via this flag. Without it, ApprovalRequired would never actually
+    # stop a gated tool call from executing — verified against a real
+    # langchain_core callback dispatch, not just a unit-test stub.
+    raise_error = True
+
     def __init__(
         self,
         *,
