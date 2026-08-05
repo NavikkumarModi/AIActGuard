@@ -1,6 +1,6 @@
 from aiactguard.core.audit_logger import AuditLogger
 from aiactguard.core.risk_classifier import RiskTier
-from aiactguard.reports._audit_summary import summarize
+from aiactguard.core.audit_summary import summarize
 from aiactguard.storage.sqlite_store import SQLiteAuditStore
 
 

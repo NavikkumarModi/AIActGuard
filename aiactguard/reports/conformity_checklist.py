@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from ..core.audit_logger import AuditLogger
-from ._audit_summary import summarize
-from ._questionnaire import Questionnaire
+from ..core.audit_summary import summarize
+from ..core.questionnaire import Questionnaire
 
 
 @dataclass

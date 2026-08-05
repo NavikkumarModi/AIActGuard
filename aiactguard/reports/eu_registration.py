@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..core.audit_logger import AuditLogger
-from ._audit_summary import summarize
-from ._questionnaire import Questionnaire, missing_fields
+from ..core.audit_summary import summarize
+from ..core.questionnaire import Questionnaire, missing_fields
 
 REQUIRED_FIELDS = (
     ("provider_name", "Provider name"),

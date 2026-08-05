@@ -4,8 +4,8 @@ from typing import Optional
 
 from ..core.audit_logger import AuditLogger
 from ..policy.schema import PolicyConfig
-from ._audit_summary import summarize
-from ._questionnaire import Questionnaire, missing_fields, render_field
+from ..core.audit_summary import summarize
+from ..core.questionnaire import Questionnaire, missing_fields, render_field
 
 REQUIRED_FIELDS = (
     ("deployer_name", "Deployer name"),

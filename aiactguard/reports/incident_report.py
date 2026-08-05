@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from ..storage.base import AuditRecord
-from ._questionnaire import Questionnaire, missing_fields, render_field
+from ..core.questionnaire import Questionnaire, missing_fields, render_field
 
 REQUIRED_FIELDS = (
     ("incident_description", "What happened"),

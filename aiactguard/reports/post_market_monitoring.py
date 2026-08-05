@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Optional
 
 from ..core.audit_logger import AuditLogger
-from ._audit_summary import summarize
-from ._questionnaire import Questionnaire, render_field
+from ..core.audit_summary import summarize
+from ..core.questionnaire import Questionnaire, render_field
 
 
 def generate_post_market_monitoring_plan(

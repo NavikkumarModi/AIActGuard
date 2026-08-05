@@ -4,7 +4,7 @@ from collections import Counter
 from typing import Optional
 
 from ..core.audit_logger import AuditLogger
-from ._questionnaire import Questionnaire, render_field
+from ..core.questionnaire import Questionnaire, render_field
 
 REQUIRED_FIELDS = (
     ("model_name", "Model name"),

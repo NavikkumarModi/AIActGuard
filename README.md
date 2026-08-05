@@ -36,11 +36,13 @@ guard = AIActGuardCallbackHandler(
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](examples/red_team_scan.py), [a fairness scan](examples/fairness_scan.py), and [drafting an incident report + GPAI transparency card](examples/incident_and_transparency_reports.py).
+See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](examples/red_team_scan.py), [a fairness scan](examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](examples/incident_and_transparency_reports.py), [composite-system risk aggregation](examples/composite_risk_pipeline.py), [NIST/ISO mappings](examples/generate_mappings.py), and [a worked community plugin](examples/plugins/example_gxp_plugin.py).
 
 ## Module roadmap
 
-### Core (Phase 1 — in progress)
+All 19 modules from the original project plan are built — see [Scope](#scope) for what's deliberately excluded.
+
+### Core (Phase 1)
 
 | # | Module | Article(s) | What it does | Status |
 |---|---|---|---|---|
@@ -72,12 +74,12 @@ See [examples/](examples/) for full runnable examples: [LangChain](examples/lang
 
 ### Multi-agent & multi-standard extensions (Phase 4 — differentiators)
 
-| # | Module | What it does |
-|---|---|---|
-| 16 | Composite-system risk aggregation | Flags when multiple individually low-risk agents, composed into a pipeline, cross into high-risk territory as a system |
-| 17 | NIST AI RMF mapping layer | Maps audit/risk data to NIST AI RMF's Govern/Map/Measure/Manage functions |
-| 18 | ISO/IEC 42001 mapping layer | Maps the same data to ISO 42001 AI management system clauses |
-| 19 | Plugin architecture for community modules | Defined interface for jurisdiction- or industry-specific community modules |
+| # | Module | What it does | Status |
+|---|---|---|---|
+| 16 | Composite-system risk aggregation | Flags when multiple individually low-risk agents, composed into a pipeline, cross into high-risk territory as a system | ✅ |
+| 17 | NIST AI RMF mapping layer | Maps audit/risk data to NIST AI RMF's Govern/Map/Measure/Manage functions | ✅ |
+| 18 | ISO/IEC 42001 mapping layer | Maps the same data to ISO 42001 AI management system clauses | ✅ |
+| 19 | Plugin architecture for community modules | Defined interface for jurisdiction- or industry-specific community modules | ✅ |
 
 ## Scope
 
@@ -91,7 +93,16 @@ See [examples/](examples/) for full runnable examples: [LangChain](examples/lang
 
 ## Contributing
 
-Contributions are welcome, especially jurisdiction- or industry-specific modules (Phase 4's plugin architecture is built for this). Open an issue to discuss before submitting a large PR.
+Contributions are welcome, especially jurisdiction- or industry-specific modules. Open an issue to discuss before submitting a large PR.
+
+**Writing a plugin:** implement `aiactguard.plugins.Plugin` — a `name`, a `description`, and a `generate(logger, *, questionnaire=None, **kwargs) -> str` method (the same shape every built-in report/mapping already has). See [examples/plugins/example_gxp_plugin.py](examples/plugins/example_gxp_plugin.py) for a worked example. To publish one for others to auto-discover, register it under the `aiactguard.plugins` entry-point group in your own package's `pyproject.toml`:
+
+```toml
+[project.entry-points."aiactguard.plugins"]
+gxp = "aiactguard_gxp_plugin:plugin"
+```
+
+Callers pick it up with `aiactguard.plugins.discover_entry_points()`.
 
 ## License
 
