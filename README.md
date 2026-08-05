@@ -36,7 +36,7 @@ guard = AIActGuardCallbackHandler(
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), and the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py).
+See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py), and [generating all five Phase 2 compliance reports](examples/generate_reports.py) from an audit trail.
 
 ## Module roadmap
 
@@ -53,13 +53,13 @@ See [examples/](examples/) for full runnable examples: [LangChain](examples/lang
 
 ### Documentation & assessment tooling (Phase 2)
 
-| # | Module | Article(s) | What it does |
-|---|---|---|---|
-| 7 | Technical documentation generator | Art. 11, Annex IV | Auto-drafts the Annex IV technical file from audit logs + a guided questionnaire |
-| 8 | Conformity readiness checklist | Art. 43 | Gap-analysis against Annex IV/VI requirements — a pre-assessment aid, not the assessment itself |
-| 9 | FRIA template generator | Art. 27 | Pre-fills a Fundamental Rights Impact Assessment draft from risk classification and deployment context |
-| 10 | Post-market monitoring plan generator | Art. 72 | Monitoring plan template scaffolded from risk tier and logged incident categories |
-| 11 | EU database registration data prep | Art. 71 | Auto-compiles the metadata the Art. 71 registration form requires — filing stays manual |
+| # | Module | Article(s) | What it does | Status |
+|---|---|---|---|---|
+| 7 | Technical documentation generator | Art. 11, Annex IV | Auto-drafts the Annex IV technical file from audit logs + a guided questionnaire | ✅ |
+| 8 | Conformity readiness checklist | Art. 43 | Gap-analysis against Annex IV/VI requirements — a pre-assessment aid, not the assessment itself | ✅ |
+| 9 | FRIA template generator | Art. 27 | Pre-fills a Fundamental Rights Impact Assessment draft from risk classification and deployment context | ✅ |
+| 10 | Post-market monitoring plan generator | Art. 72 | Monitoring plan template scaffolded from risk tier and logged incident categories | ✅ |
+| 11 | EU database registration data prep | Art. 71 | Auto-compiles the metadata the Art. 71 registration form requires — filing stays manual | ✅ |
 
 ### Robustness & incident tooling (Phase 3)
 
