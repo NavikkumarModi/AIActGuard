@@ -2,7 +2,12 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [0.1.0] — Unreleased
+## [0.1.1] — 2026-08-05
+
+### Fixed
+- README links to `LICENSE`, `pyproject.toml`, and everything under `examples/` were repo-relative, which resolves fine on GitHub but breaks on PyPI's standalone-rendered project page. Rewritten to absolute GitHub URLs.
+
+## [0.1.0] — 2026-08-05
 
 Initial build: all 19 modules from the original project plan.
 

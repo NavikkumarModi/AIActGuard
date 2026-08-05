@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aiactguard"
-version = "0.1.0"
+version = "0.1.1"
 description = "Drop-in EU AI Act compliance middleware for agentic AI frameworks — audit trails, risk classification, and human-approval gates in one decorator."
 readme = "README.md"
 license = "MIT"

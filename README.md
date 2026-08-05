@@ -2,13 +2,13 @@
 
 **Drop-in EU AI Act compliance for any agent framework — audit trails, risk classification, and human-approval gates in one decorator.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/NavikkumarModi/AIActGuard/blob/main/LICENSE)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://github.com/NavikkumarModi/AIActGuard/blob/main/pyproject.toml)
 [![Status](https://img.shields.io/badge/status-alpha-orange)](#)
 
 AIActGuard is a lightweight middleware layer that any existing agent stack can adopt without ripping out its framework. It is **not** another agent orchestrator — it makes the one you already use (LangChain, CrewAI, AutoGen, ...) compliant.
 
-> Each module logs, drafts, tests, or flags something concrete. None of them certify compliance on their own — that's a legal determination. See [Scope](#scope) below.
+> Each module logs, drafts, tests, or flags something concrete. None of them certify compliance on their own — that's a legal determination. See [Scope](https://github.com/NavikkumarModi/AIActGuard#scope) below.
 
 ## Install
 
@@ -36,11 +36,11 @@ guard = AIActGuardCallbackHandler(
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](examples/red_team_scan.py), [a fairness scan](examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](examples/incident_and_transparency_reports.py), [composite-system risk aggregation](examples/composite_risk_pipeline.py), [NIST/ISO mappings](examples/generate_mappings.py), and [a worked community plugin](examples/plugins/example_gxp_plugin.py).
+See [examples/](https://github.com/NavikkumarModi/AIActGuard/tree/main/examples) for full runnable examples: [LangChain](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py), [CrewAI](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/crewai_quickstart.py), [Claude Agent SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/red_team_scan.py), [a fairness scan](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/incident_and_transparency_reports.py), [composite-system risk aggregation](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/composite_risk_pipeline.py), [NIST/ISO mappings](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_mappings.py), and [a worked community plugin](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/plugins/example_gxp_plugin.py).
 
 ## Module roadmap
 
-All 19 modules from the original project plan are built — see [Scope](#scope) for what's deliberately excluded.
+All 19 modules from the original project plan are built — see [Scope](https://github.com/NavikkumarModi/AIActGuard#scope) for what's deliberately excluded.
 
 ### Core (Phase 1)
 
@@ -95,7 +95,7 @@ All 19 modules from the original project plan are built — see [Scope](#scope) 
 
 Contributions are welcome, especially jurisdiction- or industry-specific modules. Open an issue to discuss before submitting a large PR.
 
-**Writing a plugin:** implement `aiactguard.plugins.Plugin` — a `name`, a `description`, and a `generate(logger, *, questionnaire=None, **kwargs) -> str` method (the same shape every built-in report/mapping already has). See [examples/plugins/example_gxp_plugin.py](examples/plugins/example_gxp_plugin.py) for a worked example. To publish one for others to auto-discover, register it under the `aiactguard.plugins` entry-point group in your own package's `pyproject.toml`:
+**Writing a plugin:** implement `aiactguard.plugins.Plugin` — a `name`, a `description`, and a `generate(logger, *, questionnaire=None, **kwargs) -> str` method (the same shape every built-in report/mapping already has). See [examples/plugins/example_gxp_plugin.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/plugins/example_gxp_plugin.py) for a worked example. To publish one for others to auto-discover, register it under the `aiactguard.plugins` entry-point group in your own package's `pyproject.toml`:
 
 ```toml
 [project.entry-points."aiactguard.plugins"]
@@ -106,4 +106,4 @@ Callers pick it up with `aiactguard.plugins.discover_entry_points()`.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/NavikkumarModi/AIActGuard/blob/main/LICENSE).
