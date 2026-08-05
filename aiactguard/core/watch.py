@@ -18,6 +18,7 @@ def watch(
     policy: Optional[PolicyConfig] = None,
     approvers: Optional[list[Approver]] = None,
     rationale_fn: Optional[Callable[[tuple, dict, Any], list[dict]]] = None,
+    model_version: Optional[str] = None,
 ) -> Callable:
     """Decorator that classifies, gates, and audit-logs a single agent
     action or tool call — the no-framework-required integration path for
@@ -38,6 +39,7 @@ def watch(
         logger=logger,
         policy=policy,
         approvers=approvers,
+        model_version=model_version,
     )
 
     def decorator(fn: Callable) -> Callable:

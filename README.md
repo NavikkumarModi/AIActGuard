@@ -36,7 +36,7 @@ guard = AIActGuardCallbackHandler(
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py), and [generating all five Phase 2 compliance reports](examples/generate_reports.py) from an audit trail.
+See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](examples/red_team_scan.py), [a fairness scan](examples/fairness_scan.py), and [drafting an incident report + GPAI transparency card](examples/incident_and_transparency_reports.py).
 
 ## Module roadmap
 
@@ -63,12 +63,12 @@ See [examples/](examples/) for full runnable examples: [LangChain](examples/lang
 
 ### Robustness & incident tooling (Phase 3)
 
-| # | Module | Article(s) | What it does |
-|---|---|---|---|
-| 12 | Adversarial/red-team test harness | Art. 15 | Runs prompt-injection, jailbreak, and edge-case scenarios against your agent |
-| 13 | Bias & fairness scan | Art. 10 | Statistical checks on agent decisions across protected-characteristic proxies at runtime |
-| 14 | Serious incident report drafter | Art. 73 | Turns a flagged incident into a structured draft for human review before filing |
-| 15 | GPAI transparency card generator | Art. 53 | Auto-generates a model transparency summary from config + usage patterns |
+| # | Module | Article(s) | What it does | Status |
+|---|---|---|---|---|
+| 12 | Adversarial/red-team test harness | Art. 15 | Runs prompt-injection, jailbreak, and edge-case scenarios against your agent — heuristic detection, not semantic judgment | ✅ |
+| 13 | Bias & fairness scan | Art. 10 | Statistical checks on agent decisions across a caller-supplied protected-characteristic proxy, at runtime | ✅ |
+| 14 | Serious incident report drafter | Art. 73 | Turns a flagged incident into a structured draft for human review before filing | ✅ |
+| 15 | GPAI transparency card generator | Art. 53 | Auto-generates a model transparency summary from config + usage patterns | ✅ |
 
 ### Multi-agent & multi-standard extensions (Phase 4 — differentiators)
 
