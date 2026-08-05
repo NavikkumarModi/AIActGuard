@@ -4,3 +4,4 @@
 gate_rules:
   - min_risk_tier: high
     categories: []   # empty list = applies to every Annex III category
+    require_reason_on_override: true   # an approver overriding a denial must say why

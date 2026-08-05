@@ -20,6 +20,10 @@ class AuditRecord:
     approved: bool = True
     gated: bool = False
     error: Optional[str] = None
+    approver_id: Optional[str] = None
+    override: bool = False
+    reason: Optional[str] = None
+    rationale: Optional[list[dict[str, Any]]] = None
     record_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 

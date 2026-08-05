@@ -26,6 +26,7 @@ class ApprovalRequired(RuntimeError):
 class GateRule:
     min_risk_tier: RiskTier
     categories: list[str] = field(default_factory=list)  # empty = applies to all categories
+    require_reason_on_override: bool = True
 
 
 @dataclass
@@ -45,6 +46,7 @@ class PolicyConfig:
             GateRule(
                 min_risk_tier=RiskTier(rule["min_risk_tier"]),
                 categories=rule.get("categories", []),
+                require_reason_on_override=rule.get("require_reason_on_override", True),
             )
             for rule in raw.get("gate_rules", [])
         ]
@@ -54,10 +56,13 @@ class PolicyConfig:
     def default(cls) -> "PolicyConfig":
         return cls.from_yaml()
 
-    def requires_approval(self, *, category: str, risk_tier: RiskTier) -> bool:
+    def matching_rule(self, *, category: str, risk_tier: RiskTier) -> Optional[GateRule]:
         for rule in self.gate_rules:
             applies_to_category = not rule.categories or category in rule.categories
             meets_threshold = _TIER_ORDER[risk_tier] >= _TIER_ORDER[rule.min_risk_tier]
             if applies_to_category and meets_threshold:
-                return True
-        return False
+                return rule
+        return None
+
+    def requires_approval(self, *, category: str, risk_tier: RiskTier) -> bool:
+        return self.matching_rule(category=category, risk_tier=risk_tier) is not None

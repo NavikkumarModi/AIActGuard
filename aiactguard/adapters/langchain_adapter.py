@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
 try:
+    from langchain_core.agents import AgentAction
     from langchain_core.callbacks.base import BaseCallbackHandler
 except ImportError as exc:  # pragma: no cover
     raise ImportError(
@@ -10,9 +11,11 @@ except ImportError as exc:  # pragma: no cover
         "pip install aiactguard[langchain]"
     ) from exc
 
+from ..core.approval import Approver
 from ..core.audit_logger import AuditLogger
+from ..core.guard import GuardCore
 from ..core.risk_classifier import RiskClassifier
-from ..policy.schema import ApprovalRequired, PolicyConfig
+from ..policy.schema import PolicyConfig
 
 
 class AIActGuardCallbackHandler(BaseCallbackHandler):
@@ -20,8 +23,15 @@ class AIActGuardCallbackHandler(BaseCallbackHandler):
     risk classifier, audit logger, and policy-as-code approval gates —
     no changes to the underlying agent or its tools required.
 
+    Also captures the agent's chain-of-thought for each tool call (the
+    `.log` text LangChain attaches to `AgentAction`) as explainability
+    rationale (Art. 13) on the corresponding audit record.
+
     Usage:
-        guard = AIActGuardCallbackHandler(category="essential_services")
+        guard = AIActGuardCallbackHandler(
+            category="essential_services",
+            approvers=[team_lead_approver, compliance_officer_approver],
+        )
         agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
     """
 
@@ -32,15 +42,21 @@ class AIActGuardCallbackHandler(BaseCallbackHandler):
         classifier: Optional[RiskClassifier] = None,
         logger: Optional[AuditLogger] = None,
         policy: Optional[PolicyConfig] = None,
-        approver: Optional[Callable[[dict], bool]] = None,
+        approvers: Optional[list[Approver]] = None,
         model_version: Optional[str] = None,
     ):
-        self.category = category
-        self.classifier = classifier or RiskClassifier.default()
-        self.logger = logger or AuditLogger.default()
-        self.policy = policy or PolicyConfig.default()
-        self.approver = approver
-        self.model_version = model_version
+        self.guard = GuardCore(
+            category=category,
+            classifier=classifier,
+            logger=logger,
+            policy=policy,
+            approvers=approvers,
+            model_version=model_version,
+        )
+        self._pending_rationale: Optional[str] = None
+
+    def on_agent_action(self, action: AgentAction, **kwargs: Any) -> None:
+        self._pending_rationale = getattr(action, "log", None)
 
     def on_tool_start(
         self,
@@ -49,45 +65,21 @@ class AIActGuardCallbackHandler(BaseCallbackHandler):
         **kwargs: Any,
     ) -> None:
         tool_name = serialized.get("name", "unknown_tool")
-        risk_tier = self.classifier.classify(self.category, text=f"{tool_name} {input_str}")
-        requires_approval = self.policy.requires_approval(category=self.category, risk_tier=risk_tier)
+        rationale = None
+        if self._pending_rationale:
+            rationale = [{"source": "agent_scratchpad", "text": self._pending_rationale}]
+            self._pending_rationale = None
 
-        approved = True
-        if requires_approval:
-            if self.approver is None:
-                self.logger.log(
-                    action=tool_name,
-                    category=self.category,
-                    risk_tier=risk_tier,
-                    inputs={"input_str": input_str},
-                    model_version=self.model_version,
-                    approved=False,
-                    gated=True,
-                    error="No approver configured for a gated action.",
-                )
-                raise ApprovalRequired(
-                    f"Tool '{tool_name}' (risk_tier={risk_tier.value}) requires human approval "
-                    "but no approver was configured on AIActGuardCallbackHandler."
-                )
-            approved = self.approver(
-                {"tool": tool_name, "input": input_str, "risk_tier": risk_tier.value}
-            )
-
-        self.logger.log(
+        self.guard.evaluate_and_log(
             action=tool_name,
-            category=self.category,
-            risk_tier=risk_tier,
+            text_for_classification=f"{tool_name} {input_str}",
             inputs={"input_str": input_str},
-            model_version=self.model_version,
-            approved=approved,
-            gated=requires_approval,
+            rationale=rationale,
+            raise_on_denied=True,
         )
 
-        if not approved:
-            raise ApprovalRequired(f"Tool '{tool_name}' was not approved by the configured approver.")
-
     def on_tool_end(self, output: str, **kwargs: Any) -> None:
-        # Phase 1 logs the gate decision on tool start; correlating the
-        # tool's output back to that record is part of explainability
-        # capture, landing later in Phase 1.
+        # The gate decision + rationale are logged on tool start, which is
+        # the only point at which execution can still be stopped; tool
+        # output isn't correlated back into that record in Phase 1.
         pass

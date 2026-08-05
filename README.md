@@ -20,29 +20,36 @@ pip install aiactguard[langchain]
 
 ```python
 from aiactguard.adapters.langchain_adapter import AIActGuardCallbackHandler
+from aiactguard.core.approval import ApprovalContext, ApprovalDecision
+
+
+def compliance_officer(ctx: ApprovalContext) -> ApprovalDecision:
+    approved = input(f"Approve {ctx.action} ({ctx.risk_tier.value})? [y/N] ").lower() == "y"
+    return ApprovalDecision(approved=approved, approver_id="compliance_officer")
+
 
 guard = AIActGuardCallbackHandler(
     category="essential_services",
-    approver=lambda ctx: input(f"Approve {ctx['tool']}? [y/N] ").lower() == "y",
+    approvers=[compliance_officer],  # an escalation chain — add more to route to a fallback
 )
 
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/langchain_quickstart.py](examples/langchain_quickstart.py) for a full runnable example.
+See [examples/](examples/) for full runnable examples: [LangChain](examples/langchain_quickstart.py), [CrewAI](examples/crewai_quickstart.py), [Claude Agent SDK](examples/claude_agent_sdk_quickstart.py), and the framework-agnostic [`@watch` decorator with an escalation chain + override](examples/watch_with_escalation.py).
 
 ## Module roadmap
 
 ### Core (Phase 1 — in progress)
 
-| # | Module | Article(s) | What it does |
-|---|---|---|---|
-| 1 | Risk classification engine | Art. 6, Annex III | Tags each agent action/tool call against EU AI Act risk tiers using a configurable taxonomy across all eight Annex III high-risk categories |
-| 2 | Immutable audit trail | Art. 12 | Every decision, tool call, input/output, model version, and timestamp logged to an append-only store |
-| 3 | Human-in-the-loop approval gates | Art. 14 | Configurable interrupt points that pause execution before a high-risk action fires |
-| 4 | Explainability capture | Art. 13 | Structures the agent's chain-of-thought/tool-selection rationale into an auditor-readable format |
-| 5 | Framework adapters | — | LangChain, LangGraph, CrewAI, AutoGen, OpenAI Agents SDK, Claude Agent SDK |
-| 6 | Policy-as-code | — | YAML rules defining what counts as high-risk for a given org and what triggers a human gate |
+| # | Module | Article(s) | What it does | Status |
+|---|---|---|---|---|
+| 1 | Risk classification engine | Art. 6, Annex III | Tags each agent action/tool call against EU AI Act risk tiers using a configurable taxonomy across all eight Annex III high-risk categories | ✅ |
+| 2 | Immutable audit trail | Art. 12 | Every decision, tool call, input/output, model version, and timestamp logged to an append-only store | ✅ |
+| 3 | Human-in-the-loop approval gates | Art. 14 | Configurable interrupt points that pause execution before a high-risk action fires, with an escalation chain of approvers and reasoned-override logging | ✅ |
+| 4 | Explainability capture | Art. 13 | Structures the agent's chain-of-thought/tool-selection rationale into an auditor-readable format | ✅ |
+| 5 | Framework adapters | — | LangChain ✅, CrewAI ✅, Claude Agent SDK ✅ — LangGraph, AutoGen, OpenAI Agents SDK pending | 🚧 |
+| 6 | Policy-as-code | — | YAML rules defining what counts as high-risk for a given org and what triggers a human gate | ✅ |
 
 ### Documentation & assessment tooling (Phase 2)
 

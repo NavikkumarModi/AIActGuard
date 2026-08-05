@@ -31,6 +31,10 @@ class AuditLogger:
         approved: bool = True,
         gated: bool = False,
         error: Optional[str] = None,
+        approver_id: Optional[str] = None,
+        override: bool = False,
+        reason: Optional[str] = None,
+        rationale: Optional[list[dict[str, Any]]] = None,
     ) -> AuditRecord:
         record = AuditRecord(
             action=action,
@@ -42,6 +46,10 @@ class AuditLogger:
             approved=approved,
             gated=gated,
             error=error,
+            approver_id=approver_id,
+            override=override,
+            reason=reason,
+            rationale=rationale,
         )
         self._store.write(record)
         return record

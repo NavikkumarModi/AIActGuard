@@ -19,7 +19,11 @@ CREATE TABLE IF NOT EXISTS audit_log (
     model_version TEXT,
     approved INTEGER NOT NULL,
     gated INTEGER NOT NULL,
-    error TEXT
+    error TEXT,
+    approver_id TEXT,
+    override INTEGER NOT NULL DEFAULT 0,
+    reason TEXT,
+    rationale TEXT
 );
 """
 
@@ -47,8 +51,9 @@ class SQLiteAuditStore(AuditStore):
                 """
                 INSERT INTO audit_log
                     (record_id, timestamp, action, category, risk_tier,
-                     inputs, outputs, model_version, approved, gated, error)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     inputs, outputs, model_version, approved, gated, error,
+                     approver_id, override, reason, rationale)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.record_id,
@@ -62,6 +67,10 @@ class SQLiteAuditStore(AuditStore):
                     int(record.approved),
                     int(record.gated),
                     record.error,
+                    record.approver_id,
+                    int(record.override),
+                    record.reason,
+                    json.dumps(record.rationale) if record.rationale is not None else None,
                 ),
             )
             conn.commit()
@@ -87,7 +96,8 @@ class SQLiteAuditStore(AuditStore):
         where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
         sql = f"""
             SELECT record_id, timestamp, action, category, risk_tier,
-                   inputs, outputs, model_version, approved, gated, error
+                   inputs, outputs, model_version, approved, gated, error,
+                   approver_id, override, reason, rationale
             FROM audit_log
             {where}
             ORDER BY timestamp DESC
@@ -114,6 +124,10 @@ class SQLiteAuditStore(AuditStore):
                 approved=bool(row[8]),
                 gated=bool(row[9]),
                 error=row[10],
+                approver_id=row[11],
+                override=bool(row[12]),
+                reason=row[13],
+                rationale=json.loads(row[14]) if row[14] is not None else None,
             )
             for row in rows
         ]

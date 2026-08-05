@@ -9,6 +9,7 @@ from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 
 from aiactguard.adapters.langchain_adapter import AIActGuardCallbackHandler
+from aiactguard.core.approval import ApprovalContext, ApprovalDecision
 
 
 @tool
@@ -24,11 +25,19 @@ prompt = ChatPromptTemplate.from_messages(
 agent = create_tool_calling_agent(llm, tools=[check_loan_eligibility], prompt=prompt)
 executor = AgentExecutor(agent=agent, tools=[check_loan_eligibility])
 
+
+def prompt_approver(ctx: ApprovalContext) -> ApprovalDecision:
+    approved = input(f"Approve {ctx.action} ({ctx.risk_tier.value})? [y/N] ").lower() == "y"
+    return ApprovalDecision(approved=approved, approver_id="cli-operator")
+
+
 # essential_services is a high-risk Annex III category by default, so this
-# gate requires human approval before the tool call fires.
+# gate requires human approval before the tool call fires. `approvers` is
+# an escalation chain — add a second approver here to route to a fallback
+# if the first declines to decide (returns None).
 guard = AIActGuardCallbackHandler(
     category="essential_services",
-    approver=lambda ctx: input(f"Approve {ctx['tool']}? [y/N] ").lower() == "y",
+    approvers=[prompt_approver],
 )
 
 result = executor.invoke(

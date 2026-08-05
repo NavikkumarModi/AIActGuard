@@ -34,6 +34,27 @@ def test_query_filters_by_risk_tier(tmp_path):
     assert high_only[0].action == "b"
 
 
+def test_log_persists_override_and_rationale_fields(tmp_path):
+    store = SQLiteAuditStore(tmp_path / "audit.db")
+    logger = AuditLogger(store=store)
+
+    logger.log(
+        action="check_loan_eligibility",
+        category="essential_services",
+        risk_tier=RiskTier.HIGH,
+        approver_id="compliance_officer",
+        override=True,
+        reason="Manually verified applicant identity via phone call.",
+        rationale=[{"source": "agent_scratchpad", "text": "Applicant matched KYC record."}],
+    )
+
+    record = logger.query(category="essential_services")[0]
+    assert record.approver_id == "compliance_officer"
+    assert record.override is True
+    assert record.reason == "Manually verified applicant identity via phone call."
+    assert record.rationale == [{"source": "agent_scratchpad", "text": "Applicant matched KYC record."}]
+
+
 def test_audit_log_is_append_only_across_instances(tmp_path):
     db_path = tmp_path / "audit.db"
     AuditLogger(store=SQLiteAuditStore(db_path)).log(
