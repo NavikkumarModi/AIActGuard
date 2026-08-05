@@ -1,0 +1,6 @@
+# Default policy-as-code: what triggers a human-approval gate (Art. 14).
+# Override per-org — e.g. widen categories, tighten/loosen the threshold.
+
+gate_rules:
+  - min_risk_tier: high
+    categories: []   # empty list = applies to every Annex III category

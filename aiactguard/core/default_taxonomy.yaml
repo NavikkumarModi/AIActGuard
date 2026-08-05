@@ -1,0 +1,46 @@
+# Default EU AI Act Annex III risk taxonomy.
+#
+# This is a starting point, not a legal determination — extend or override
+# categories/keywords/tiers to match your org's actual use cases and get a
+# legal review before relying on any tier assignment. Prohibited-practice
+# (Title II / "unacceptable") determination is explicitly out of scope for
+# this taxonomy; it stays a human legal judgment call.
+
+default_tier: minimal
+
+categories:
+  - category: biometrics
+    risk_tier: high
+    keywords: [biometric, facial_recognition, fingerprint, iris_scan, voice_id]
+
+  - category: critical_infrastructure
+    risk_tier: high
+    keywords: [power_grid, water_supply, traffic_control, energy_management]
+
+  - category: education
+    risk_tier: high
+    keywords: [exam_scoring, admissions, student_assessment, proctoring]
+
+  - category: employment
+    risk_tier: high
+    keywords: [resume_screening, hiring, performance_review, termination, promotion]
+
+  - category: essential_services
+    risk_tier: high
+    keywords: [credit_scoring, insurance_pricing, benefits_eligibility, emergency_dispatch]
+
+  - category: law_enforcement
+    risk_tier: high
+    keywords: [predictive_policing, crime_risk_scoring, suspect_profiling]
+
+  - category: migration
+    risk_tier: high
+    keywords: [visa_processing, asylum_assessment, border_control]
+
+  - category: justice_democracy
+    risk_tier: high
+    keywords: [judicial_assistance, sentencing, election_influence]
+
+  - category: general_assistance
+    risk_tier: limited
+    keywords: [chatbot, summarization, drafting, search]
