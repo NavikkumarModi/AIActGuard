@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Callable, Optional
 
 from ..core.audit_logger import AuditLogger
+from ..core.markdown import MarkdownReport
 from ..storage.base import AuditRecord
 
 
@@ -28,26 +29,26 @@ class FairnessScanResult:
     flagged: bool = False
 
     def to_markdown(self) -> str:
-        lines = [
-            "# Bias & fairness scan (Art. 10 draft)",
-            "",
-            "> Statistical check on runtime decisions grouped by whatever proxy "
-            "attribute was supplied to this scan — it does not know about real "
-            "protected characteristics unless you told it, and it does not "
-            "cover training-data bias.",
-            "",
-            f"**Threshold (four-fifths-rule style):** {self.threshold}",
-        ]
+        out = (
+            MarkdownReport("Bias & fairness scan (Art. 10 draft)")
+            .note(
+                "Statistical check on runtime decisions grouped by whatever proxy "
+                "attribute was supplied to this scan — it does not know about real "
+                "protected characteristics unless you told it, and it does not "
+                "cover training-data bias."
+            )
+            .line(f"**Threshold (four-fifths-rule style):** {self.threshold}")
+        )
         if self.disparate_impact_ratio is not None:
-            lines.append(f"**Disparate impact ratio (min/max selection rate):** {self.disparate_impact_ratio:.2f}")
-            lines.append(f"**Flagged:** {'yes — below threshold' if self.flagged else 'no'}")
+            out.line(f"**Disparate impact ratio (min/max selection rate):** {self.disparate_impact_ratio:.2f}")
+            out.line(f"**Flagged:** {'yes — below threshold' if self.flagged else 'no'}")
         else:
-            lines.append("**Disparate impact ratio:** n/a (fewer than 2 groups with data)")
-        lines.append("")
-        lines.append("## Selection rates by group")
+            out.line("**Disparate impact ratio:** n/a (fewer than 2 groups with data)")
+        out.blank()
+        out.heading("Selection rates by group")
         for group, rate in sorted(self.selection_rates.items()):
-            lines.append(f"- {group}: {rate:.0%} approved ({self.counts.get(group, 0)} decision(s))")
-        return "\n".join(lines)
+            out.bullet(f"{group}: {rate:.0%} approved ({self.counts.get(group, 0)} decision(s))")
+        return out.build()
 
 
 def compute_disparate_impact(outcomes: list[GroupOutcome], *, threshold: float = 0.8) -> FairnessScanResult:

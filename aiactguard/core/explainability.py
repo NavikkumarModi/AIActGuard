@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .markdown import MarkdownReport
 from ..storage.base import AuditRecord
 
 
@@ -10,30 +11,29 @@ def format_record(record: AuditRecord) -> str:
     captured alongside the decision facts already in the audit trail — it
     doesn't invent an explanation the system didn't actually produce.
     """
-    lines = [
-        f"### {record.action}",
-        f"- **Timestamp:** {record.timestamp}",
-        f"- **Category:** {record.category}",
-        f"- **Risk tier:** {record.risk_tier}",
-        f"- **Gated:** {'yes' if record.gated else 'no'}",
-        f"- **Outcome:** {'approved' if record.approved else 'denied'}",
-    ]
+    out = (
+        MarkdownReport()
+        .line(f"### {record.action}")
+        .field("Timestamp", record.timestamp)
+        .field("Category", record.category)
+        .field("Risk tier", record.risk_tier)
+        .field("Gated", "yes" if record.gated else "no")
+        .field("Outcome", "approved" if record.approved else "denied")
+    )
 
     if record.gated:
-        lines.append(f"- **Approver:** {record.approver_id or 'n/a'}")
+        out.field("Approver", record.approver_id or "n/a")
         if record.override:
-            lines.append(f"- **Override:** yes — {record.reason or 'no reason recorded'}")
+            out.field("Override", f"yes — {record.reason or 'no reason recorded'}")
         elif record.reason:
-            lines.append(f"- **Reason:** {record.reason}")
+            out.field("Reason", record.reason)
 
     if record.error:
-        lines.append(f"- **Error:** {record.error}")
+        out.field("Error", record.error)
 
     if record.rationale:
-        lines.append("- **Rationale:**")
+        out.bullet("**Rationale:**")
         for step in record.rationale:
-            source = step.get("source", "unknown")
-            text = step.get("text", "")
-            lines.append(f"  - _{source}_: {text}")
+            out.sub_bullet(f"_{step.get('source', 'unknown')}_: {step.get('text', '')}")
 
-    return "\n".join(lines)
+    return out.build()

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..storage.base import AuditRecord
+from .markdown import MarkdownReport
 from .risk_classifier import RiskTier
 
 _TIER_ORDER = [RiskTier.MINIMAL, RiskTier.LIMITED, RiskTier.HIGH, RiskTier.UNACCEPTABLE]
@@ -25,25 +26,25 @@ class CompositeRiskResult:
     reason: str = ""
 
     def to_markdown(self) -> str:
-        lines = [
-            "# Composite-system risk aggregation",
-            "",
-            "> Heuristic: flags when a pipeline's category fan-out suggests the "
-            "system as a whole may carry more risk than any single step — not "
-            "a formal systemic-risk determination.",
-            "",
-            f"- **Steps analyzed:** {len(self.steps)}",
-            f"- **Distinct Annex III categories:** {', '.join(self.distinct_categories) or 'none'}",
-            f"- **Highest individual step tier:** {self.max_individual_tier.value}",
-            f"- **Composite tier:** {self.composite_tier.value}",
-            f"- **Escalated:** {'yes' if self.escalated else 'no'}",
-            f"- **Reason:** {self.reason}",
-            "",
-            "## Steps",
-        ]
+        out = (
+            MarkdownReport("Composite-system risk aggregation")
+            .note(
+                "Heuristic: flags when a pipeline's category fan-out suggests the "
+                "system as a whole may carry more risk than any single step — not "
+                "a formal systemic-risk determination."
+            )
+            .field("Steps analyzed", len(self.steps))
+            .field("Distinct Annex III categories", ", ".join(self.distinct_categories) or "none")
+            .field("Highest individual step tier", self.max_individual_tier.value)
+            .field("Composite tier", self.composite_tier.value)
+            .field("Escalated", "yes" if self.escalated else "no")
+            .field("Reason", self.reason)
+            .blank()
+            .heading("Steps")
+        )
         for step in self.steps:
-            lines.append(f"- `{step.name}` — {step.category} ({step.risk_tier.value})")
-        return "\n".join(lines)
+            out.bullet(f"`{step.name}` — {step.category} ({step.risk_tier.value})")
+        return out.build()
 
 
 def analyze_pipeline(steps: list[PipelineStep], *, category_fanout_threshold: int = 2) -> CompositeRiskResult:

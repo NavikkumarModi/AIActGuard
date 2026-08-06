@@ -3,9 +3,10 @@ from __future__ import annotations
 from typing import Optional
 
 from ..core.audit_logger import AuditLogger
-from ..policy.schema import PolicyConfig
 from ..core.audit_summary import summarize
+from ..core.markdown import MarkdownReport
 from ..core.questionnaire import Questionnaire, missing_fields, render_field
+from ..policy.schema import PolicyConfig
 
 REQUIRED_FIELDS = (
     ("deployer_name", "Deployer name"),
@@ -37,45 +38,44 @@ def generate_fria(
 
     gaps = missing_fields(questionnaire, list(REQUIRED_FIELDS))
 
-    lines = ["# Fundamental Rights Impact Assessment (Art. 27 draft)", ""]
+    out = MarkdownReport("Fundamental Rights Impact Assessment (Art. 27 draft)")
     if gaps:
-        lines.append(f"> **{len(gaps)} required field(s) missing:** {', '.join(gaps)}. This draft is incomplete until they're filled in.")
-        lines.append("")
+        out.note(f"**{len(gaps)} required field(s) missing:** {', '.join(gaps)}. This draft is incomplete until they're filled in.")
 
-    lines.append("## 1. Deployer & deployment context")
+    out.heading("1. Deployer & deployment context")
     for key, label in (("deployer_name", "Deployer name"), ("deployment_context", "Deployment context")):
-        lines.append(f"- **{label}:** {render_field(questionnaire, key, label)}")
-    lines.append("")
+        out.field(label, render_field(questionnaire, key, label))
+    out.blank()
 
-    lines.append("## 2. Affected persons and rights")
-    lines.append(f"- **Groups likely affected:** {render_field(questionnaire, 'affected_groups', 'Groups of natural persons likely affected')}")
-    lines.append(f"- **Fundamental rights at stake:** {render_field(questionnaire, 'fundamental_rights_at_stake', 'Fundamental rights potentially at stake')}")
-    lines.append("")
+    out.heading("2. Affected persons and rights")
+    out.field("Groups likely affected", render_field(questionnaire, "affected_groups", "Groups of natural persons likely affected"))
+    out.field("Fundamental rights at stake", render_field(questionnaire, "fundamental_rights_at_stake", "Fundamental rights potentially at stake"))
+    out.blank()
 
-    lines.append("## 3. Risk classification (from the system)")
+    out.heading("3. Risk classification (from the system)")
     if summary.by_risk_tier:
         for tier, count in sorted(summary.by_risk_tier.items()):
-            lines.append(f"- {tier}: {count} action(s) logged")
+            out.bullet(f"{tier}: {count} action(s) logged")
     else:
-        lines.append("- No audit records found for this category yet.")
-    lines.append("")
+        out.bullet("No audit records found for this category yet.")
+    out.blank()
 
-    lines.append("## 4. Mitigation measures (from policy-as-code)")
+    out.heading("4. Mitigation measures (from policy-as-code)")
     if policy.gate_rules:
         for rule in policy.gate_rules:
             scope = ", ".join(rule.categories) if rule.categories else "all categories"
-            lines.append(
-                f"- Human approval gate at risk tier >= {rule.min_risk_tier.value} ({scope}); "
+            out.bullet(
+                f"Human approval gate at risk tier >= {rule.min_risk_tier.value} ({scope}); "
                 f"override requires reason: {rule.require_reason_on_override}"
             )
     else:
-        lines.append("- No gate rules configured — a FRIA-relevant system should generally have at least one.")
-    lines.append("")
+        out.bullet("No gate rules configured — a FRIA-relevant system should generally have at least one.")
+    out.blank()
 
-    lines.append(
-        "> This draft covers what the system can evidence about itself. The "
+    out.note(
+        "This draft covers what the system can evidence about itself. The "
         "deployer's legal/compliance function must review and complete it "
         "before it's usable as an actual FRIA filing."
     )
 
-    return "\n".join(lines)
+    return out.build()

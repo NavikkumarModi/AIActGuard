@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from ..core.audit_logger import AuditLogger
 from ..core.audit_summary import summarize
+from ..core.markdown import MarkdownReport
 from ..core.questionnaire import Questionnaire, missing_fields
 
 REQUIRED_FIELDS = (
@@ -28,18 +29,17 @@ class RegistrationData:
     missing_fields: list[str] = field(default_factory=list)
 
     def to_markdown(self) -> str:
-        lines = ["# EU database registration data (Art. 71 draft)", ""]
+        out = MarkdownReport("EU database registration data (Art. 71 draft)")
         if self.missing_fields:
-            lines.append(f"> **{len(self.missing_fields)} required field(s) missing:** {', '.join(self.missing_fields)}.")
-            lines.append("")
-        lines.append(f"- **Provider name:** {self.provider_name or '_missing_'}")
-        lines.append(f"- **System name:** {self.system_name or '_missing_'}")
-        lines.append(f"- **Intended purpose:** {self.intended_purpose or '_missing_'}")
-        lines.append(f"- **Contact email:** {self.contact_email or '_missing_'}")
-        lines.append(f"- **Risk categories touched:** {', '.join(self.risk_categories) or 'none logged yet'}")
-        lines.append("")
-        lines.append("> Data prep only — submit via the actual EU database registration process.")
-        return "\n".join(lines)
+            out.note(f"**{len(self.missing_fields)} required field(s) missing:** {', '.join(self.missing_fields)}.")
+        out.field("Provider name", self.provider_name or "_missing_")
+        out.field("System name", self.system_name or "_missing_")
+        out.field("Intended purpose", self.intended_purpose or "_missing_")
+        out.field("Contact email", self.contact_email or "_missing_")
+        out.field("Risk categories touched", ", ".join(self.risk_categories) or "none logged yet")
+        out.blank()
+        out.note("Data prep only — submit via the actual EU database registration process.")
+        return out.build()
 
 
 def compile_registration_data(logger: AuditLogger, *, questionnaire: Questionnaire) -> RegistrationData:

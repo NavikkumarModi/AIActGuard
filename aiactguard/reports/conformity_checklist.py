@@ -5,6 +5,7 @@ from typing import Optional
 
 from ..core.audit_logger import AuditLogger
 from ..core.audit_summary import summarize
+from ..core.markdown import MarkdownReport
 from ..core.questionnaire import Questionnaire
 
 
@@ -25,22 +26,19 @@ class ConformityChecklistResult:
         return [i for i in self.items if i.status == "gap"]
 
     def to_markdown(self) -> str:
-        lines = [
-            "# Conformity readiness checklist (pre-assessment aid)",
-            "",
-            "> This is a gap-analysis against logged evidence, not a conformity "
+        out = MarkdownReport("Conformity readiness checklist (pre-assessment aid)").note(
+            "This is a gap-analysis against logged evidence, not a conformity "
             "assessment — it doesn't determine whether the system actually "
             "conforms, only whether the supporting evidence this generator can "
-            "see is in place.",
-            "",
-        ]
+            "see is in place."
+        )
         for item in self.items:
             mark = "x" if item.status == "met" else " "
-            lines.append(f"- [{mark}] **{item.requirement}** ({item.article}) — {item.evidence}")
+            out.line(f"- [{mark}] **{item.requirement}** ({item.article}) — {item.evidence}")
         if self.gaps:
-            lines.append("")
-            lines.append(f"**{len(self.gaps)} gap(s) found** — see unchecked items above.")
-        return "\n".join(lines)
+            out.blank()
+            out.line(f"**{len(self.gaps)} gap(s) found** — see unchecked items above.")
+        return out.build()
 
 
 def generate_conformity_checklist(

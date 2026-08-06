@@ -4,6 +4,7 @@ from typing import Optional
 
 from ..core.audit_logger import AuditLogger
 from ..core.audit_summary import summarize
+from ..core.markdown import MarkdownReport
 from ..core.questionnaire import Questionnaire, render_field
 from ..policy.schema import PolicyConfig
 
@@ -24,38 +25,38 @@ def generate_iso_42001_mapping(
     records = logger.query(category=category, limit=10_000)
     summary = summarize(records)
 
-    lines = ["# ISO/IEC 42001 mapping", ""]
+    out = MarkdownReport("ISO/IEC 42001 mapping")
 
-    lines.append("## Clause 4 — Context of the organization")
-    lines.append(f"- **System scope:** {render_field(questionnaire, 'system_name', 'System name')}")
-    lines.append(f"- **Intended purpose:** {render_field(questionnaire, 'intended_purpose', 'Intended purpose')}")
-    lines.append("")
+    out.heading("Clause 4 — Context of the organization")
+    out.field("System scope", render_field(questionnaire, "system_name", "System name"))
+    out.field("Intended purpose", render_field(questionnaire, "intended_purpose", "Intended purpose"))
+    out.blank()
 
-    lines.append("## Clause 5 — Leadership & policy")
-    lines.append(f"- **AI policy owner:** {render_field(questionnaire, 'policy_owner', 'Policy owner')}")
-    lines.append("")
+    out.heading("Clause 5 — Leadership & policy")
+    out.field("AI policy owner", render_field(questionnaire, "policy_owner", "Policy owner"))
+    out.blank()
 
-    lines.append("## Clause 6 — Risk assessment & treatment")
-    lines.append(f"- **Risk categories in scope:** {', '.join(sorted(summary.by_category)) or 'none logged yet'}")
+    out.heading("Clause 6 — Risk assessment & treatment")
+    out.field("Risk categories in scope", ", ".join(sorted(summary.by_category)) or "none logged yet")
     if policy.gate_rules:
         for rule in policy.gate_rules:
             scope = ", ".join(rule.categories) if rule.categories else "all categories"
-            lines.append(f"- Treatment control: human-approval gate at risk tier >= {rule.min_risk_tier.value} ({scope})")
-    lines.append("")
+            out.bullet(f"Treatment control: human-approval gate at risk tier >= {rule.min_risk_tier.value} ({scope})")
+    out.blank()
 
-    lines.append("## Clause 8 — Operational controls")
-    lines.append(f"- **Actions logged:** {summary.total_actions}")
-    lines.append(f"- **Gated actions:** {summary.gated_count} | **Overrides:** {summary.override_count}")
-    lines.append("")
+    out.heading("Clause 8 — Operational controls")
+    out.field("Actions logged", summary.total_actions)
+    out.field("Gated actions", f"{summary.gated_count} | **Overrides:** {summary.override_count}")
+    out.blank()
 
-    lines.append("## Clause 9 — Performance evaluation")
-    lines.append(f"- **Denials:** {summary.denied_count}")
+    out.heading("Clause 9 — Performance evaluation")
+    out.field("Denials", summary.denied_count)
     if summary.earliest_timestamp:
-        lines.append(f"- **Evaluation window:** {summary.earliest_timestamp} to {summary.latest_timestamp}")
-    lines.append("")
+        out.field("Evaluation window", f"{summary.earliest_timestamp} to {summary.latest_timestamp}")
+    out.blank()
 
-    lines.append("## Clause 10 — Improvement")
-    lines.append(f"- **Corrective action process:** {render_field(questionnaire, 'corrective_action_process', 'Corrective action process')}")
-    lines.append("- See `aiactguard.reports.incident_report` and `aiactguard.reports.post_market_monitoring` for the underlying corrective-action inputs.")
+    out.heading("Clause 10 — Improvement")
+    out.field("Corrective action process", render_field(questionnaire, "corrective_action_process", "Corrective action process"))
+    out.bullet("See `aiactguard.reports.incident_report` and `aiactguard.reports.post_market_monitoring` for the underlying corrective-action inputs.")
 
-    return "\n".join(lines)
+    return out.build()

@@ -23,6 +23,7 @@ Tests for the CrewAI and Claude Agent SDK adapters are duck-typed against those 
 - **Show what you can't infer, don't fabricate it.** Report generators take a `questionnaire` dict for fields the code can't know (system description, who's affected, intended purpose) and render a visible `NEEDS INPUT` marker when one's missing — see `aiactguard/core/questionnaire.py`. Follow this pattern for new report-style modules.
 - **Dependency-light.** Core (`aiactguard/core/`, `aiactguard/policy/`, `aiactguard/storage/`) has no framework dependencies. Adapters for specific frameworks (`aiactguard/adapters/`) are duck-typed against the target framework's object shapes where possible (see `crewai_adapter.py`, `claude_agent_sdk_adapter.py`) rather than hard-importing it, so the rest of the library stays installable without every framework pulled in.
 - **Reuse `GuardCore`.** Any new integration surface that needs to classify → gate → log an action should go through `aiactguard.core.guard.GuardCore`, not reimplement that sequence — see how the existing adapters use it.
+- **Reuse `MarkdownReport`.** Every report/mapping/testing module renders its output through `aiactguard.core.markdown.MarkdownReport` rather than hand-building a `lines.append(...)` list — keep new generators consistent with that.
 
 ## Adding a jurisdiction- or industry-specific module
 

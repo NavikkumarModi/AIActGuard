@@ -4,6 +4,7 @@ from collections import Counter
 from typing import Optional
 
 from ..core.audit_logger import AuditLogger
+from ..core.markdown import MarkdownReport
 from ..core.questionnaire import Questionnaire, render_field
 
 REQUIRED_FIELDS = (
@@ -30,27 +31,27 @@ def generate_gpai_transparency_card(
     records = logger.query(category=category, limit=10_000)
     usage = Counter(r.model_version for r in records if r.model_version)
 
-    lines = ["# GPAI transparency card (Art. 53 draft)", ""]
+    out = MarkdownReport("GPAI transparency card (Art. 53 draft)")
 
-    lines.append("## 1. Model identity")
+    out.heading("1. Model identity")
     for key, label in (("model_name", "Model name"), ("provider", "Provider")):
-        lines.append(f"- **{label}:** {render_field(questionnaire, key, label)}")
-    lines.append("")
+        out.field(label, render_field(questionnaire, key, label))
+    out.blank()
 
-    lines.append("## 2. Capabilities, limitations, and known risks")
-    lines.append(f"- **Capabilities:** {render_field(questionnaire, 'capabilities', 'Capabilities')}")
-    lines.append(f"- **Known limitations:** {render_field(questionnaire, 'known_limitations', 'Known limitations')}")
-    lines.append(f"- **Known risks:** {render_field(questionnaire, 'known_risks', 'Known risks')}")
-    lines.append("")
+    out.heading("2. Capabilities, limitations, and known risks")
+    out.field("Capabilities", render_field(questionnaire, "capabilities", "Capabilities"))
+    out.field("Known limitations", render_field(questionnaire, "known_limitations", "Known limitations"))
+    out.field("Known risks", render_field(questionnaire, "known_risks", "Known risks"))
+    out.blank()
 
-    lines.append("## 3. Observed usage (from the audit trail)")
+    out.heading("3. Observed usage (from the audit trail)")
     if usage:
         for model_version, count in usage.most_common():
-            lines.append(f"- {model_version}: {count} logged call(s)")
+            out.bullet(f"{model_version}: {count} logged call(s)")
     else:
-        lines.append("- No `model_version` recorded on any audit record yet — pass `model_version=` when constructing your adapter/GuardCore.")
-    lines.append("")
+        out.bullet("No `model_version` recorded on any audit record yet — pass `model_version=` when constructing your adapter/GuardCore.")
+    out.blank()
 
-    lines.append("> Summarizes this deployment's own use of the model; does not substitute for the model provider's own transparency documentation.")
+    out.note("Summarizes this deployment's own use of the model; does not substitute for the model provider's own transparency documentation.")
 
-    return "\n".join(lines)
+    return out.build()

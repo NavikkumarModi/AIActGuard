@@ -3,10 +3,11 @@ from __future__ import annotations
 from typing import Optional
 
 from ..core.audit_logger import AuditLogger
-from ..core.explainability import format_record
-from ..core.risk_classifier import RiskClassifier
 from ..core.audit_summary import summarize
+from ..core.explainability import format_record
+from ..core.markdown import MarkdownReport
 from ..core.questionnaire import Questionnaire, render_field
+from ..core.risk_classifier import RiskClassifier
 
 REQUIRED_FIELDS = (
     ("system_name", "System name"),
@@ -35,54 +36,52 @@ def generate_technical_documentation(
     records = logger.query(category=category, limit=10_000)
     summary = summarize(records)
 
-    lines = ["# Technical Documentation (Art. 11 / Annex IV draft)", ""]
-    lines.append(
-        "> Auto-drafted from the audit trail and the questionnaire supplied to "
+    out = MarkdownReport("Technical Documentation (Art. 11 / Annex IV draft)").note(
+        "Auto-drafted from the audit trail and the questionnaire supplied to "
         "this generator. Every `NEEDS INPUT` marker below must be filled in "
         "and the whole document reviewed by a human before filing — this "
         "tool drafts, it does not certify."
     )
-    lines.append("")
 
-    lines.append("## 1. System overview")
+    out.heading("1. System overview")
     for key, label in REQUIRED_FIELDS:
-        lines.append(f"- **{label}:** {render_field(questionnaire, key, label)}")
-    lines.append("")
+        out.field(label, render_field(questionnaire, key, label))
+    out.blank()
 
-    lines.append("## 2. Risk classification summary")
-    lines.append(f"- **Annex III categories configured:** {', '.join(classifier.categories()) or 'none'}")
-    lines.append(f"- **Actions logged:** {summary.total_actions}")
+    out.heading("2. Risk classification summary")
+    out.field("Annex III categories configured", ", ".join(classifier.categories()) or "none")
+    out.field("Actions logged", summary.total_actions)
     if summary.by_risk_tier:
-        lines.append("- **By risk tier:**")
+        out.bullet("**By risk tier:**")
         for tier, count in sorted(summary.by_risk_tier.items()):
-            lines.append(f"  - {tier}: {count}")
+            out.sub_bullet(f"{tier}: {count}")
     if summary.earliest_timestamp:
-        lines.append(f"- **Coverage window:** {summary.earliest_timestamp} to {summary.latest_timestamp}")
-    lines.append("")
+        out.field("Coverage window", f"{summary.earliest_timestamp} to {summary.latest_timestamp}")
+    out.blank()
 
-    lines.append("## 3. Human oversight measures")
-    lines.append(f"- **Gated actions:** {summary.gated_count}")
-    lines.append(f"- **Approved:** {summary.approved_count} | **Denied:** {summary.denied_count}")
-    lines.append(f"- **Overrides logged (with reason):** {summary.override_count}")
-    lines.append(
-        f"- **Oversight process description:** "
-        f"{render_field(questionnaire, 'human_oversight_measures', 'Human oversight measures')}"
+    out.heading("3. Human oversight measures")
+    out.field("Gated actions", summary.gated_count)
+    out.field("Approved", f"{summary.approved_count} | **Denied:** {summary.denied_count}")
+    out.field("Overrides logged (with reason)", summary.override_count)
+    out.field(
+        "Oversight process description",
+        render_field(questionnaire, "human_oversight_measures", "Human oversight measures"),
     )
-    lines.append("")
+    out.blank()
 
-    lines.append("## 4. Data & performance")
-    lines.append(f"- **Data governance:** {render_field(questionnaire, 'data_governance_summary', 'Data governance summary')}")
+    out.heading("4. Data & performance")
+    out.field("Data governance", render_field(questionnaire, "data_governance_summary", "Data governance summary"))
     if summary.by_category:
-        lines.append("- **Actions by category:**")
+        out.bullet("**Actions by category:**")
         for cat, count in sorted(summary.by_category.items()):
-            lines.append(f"  - {cat}: {count}")
-    lines.append("")
+            out.sub_bullet(f"{cat}: {count}")
+    out.blank()
 
     gated_examples = [r for r in records if r.gated][:3]
     if gated_examples:
-        lines.append("## 5. Explainability — worked examples")
+        out.heading("5. Explainability — worked examples")
         for record in gated_examples:
-            lines.append(format_record(record))
-            lines.append("")
+            out.line(format_record(record))
+            out.blank()
 
-    return "\n".join(lines)
+    return out.build()

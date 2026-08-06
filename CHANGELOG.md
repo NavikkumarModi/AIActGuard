@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.2] — 2026-08-06
+
+### Changed
+- Removed `agentguard-project-plan.md` and `docs/launch/` (internal planning/launch drafts, not meant for the public repo) — kept privately outside the repo.
+- Extracted the repeated Markdown-building code duplicated across every report/mapping/testing module into a shared `aiactguard.core.markdown.MarkdownReport` builder. Output is unchanged; this is a pure internal refactor.
+
 ## [0.1.1] — 2026-08-05
 
 ### Fixed

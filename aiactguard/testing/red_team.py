@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
+from ..core.markdown import MarkdownReport
+
 
 @dataclass
 class RedTeamScenario:
@@ -40,26 +42,26 @@ class RedTeamSuiteResult:
         return sum(1 for r in self.results if r.passed) / len(self.results)
 
     def to_markdown(self) -> str:
-        lines = [
-            "# Adversarial / red-team test report (Art. 15 draft)",
-            "",
-            "> Detection here is heuristic (keyword matching or a simple "
-            "validator per scenario), not semantic judgment — a sophisticated "
-            "jailbreak can pass this harness undetected. Treat a clean run as "
-            "a floor, not a certification.",
-            "",
-            f"**Pass rate:** {self.pass_rate:.0%} ({sum(1 for r in self.results if r.passed)}/{len(self.results)})",
-            "",
-        ]
+        out = (
+            MarkdownReport("Adversarial / red-team test report (Art. 15 draft)")
+            .note(
+                "Detection here is heuristic (keyword matching or a simple "
+                "validator per scenario), not semantic judgment — a sophisticated "
+                "jailbreak can pass this harness undetected. Treat a clean run as "
+                "a floor, not a certification."
+            )
+            .line(f"**Pass rate:** {self.pass_rate:.0%} ({sum(1 for r in self.results if r.passed)}/{len(self.results)})")
+            .blank()
+        )
         for r in self.results:
             mark = "PASS" if r.passed else "FAIL"
-            lines.append(f"- **[{mark}]** `{r.scenario}` ({r.category})")
+            out.bullet(f"**[{mark}]** `{r.scenario}` ({r.category})")
             if not r.passed:
                 snippet = r.response[:200] + ("..." if len(r.response) > 200 else "")
-                lines.append(f"  - Response: {snippet!r}")
+                out.sub_bullet(f"Response: {snippet!r}")
             if r.detail:
-                lines.append(f"  - {r.detail}")
-        return "\n".join(lines)
+                out.sub_bullet(r.detail)
+        return out.build()
 
 
 def _cyrillic_o_injection() -> str:
