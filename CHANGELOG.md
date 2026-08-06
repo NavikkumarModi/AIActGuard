@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.3] — 2026-08-06
+
+### Added
+- Framework adapters for the remaining three named in the original plan: **LangGraph** (using LangGraph's own `interrupt()`/`Command(resume=...)` for human-in-the-loop, not just a raised exception), **AutoGen** (`autogen_core` intervention handler, raises `ToolException` matching AutoGen's own tool-approval cookbook), and **OpenAI Agents SDK** (`RunHooks`). All 6 adapters named in the original roadmap are now built.
+- `PostgresAuditStore` (`aiactguard.storage.postgres_store`) — the production storage backend the original architecture called for; mirrors `SQLiteAuditStore`'s schema/behavior exactly. New `postgres` extra.
+- New extras: `langgraph`, `autogen`, `openai-agents`, `postgres`.
+
+### Fixed
+- `claude_agent_sdk_adapter.py`'s `async def hook(...)` did a blocking synchronous SQLite write directly in the coroutine, stalling the event loop on every gated tool call. Now runs it via `asyncio.to_thread`; the new OpenAI Agents SDK adapter uses the same pattern.
+
+Every new adapter's exception-propagation behavior (does raising inside the hook actually stop the tool from running?) was verified against the real installed framework, not assumed — this is what caught the `raise_error` gotcha in the LangChain adapter back in 0.1.0's development. Confirmed: LangGraph and AutoGen propagate raised exceptions to the caller unmodified; the OpenAI Agents SDK catches and re-wraps in `agents.exceptions.UserError`.
+
 ## [0.1.2] — 2026-08-06
 
 ### Changed

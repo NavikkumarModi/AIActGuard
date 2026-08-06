@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from typing import Any, Optional
 
 from ..core.approval import Approver
@@ -49,7 +50,11 @@ def make_pre_tool_use_hook(
         tool_input = input_data.get("tool_input", {})
 
         try:
-            guard.evaluate_and_log(
+            # GuardCore does a blocking SQLite write; running it in a thread
+            # keeps this coroutine from stalling the event loop on every
+            # gated tool call.
+            await asyncio.to_thread(
+                guard.evaluate_and_log,
                 action=tool_name,
                 text_for_classification=f"{tool_name} {tool_input}",
                 inputs={"tool_input": tool_input, "tool_use_id": tool_use_id},

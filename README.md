@@ -16,6 +16,8 @@ AIActGuard is a lightweight middleware layer that any existing agent stack can a
 pip install aiactguard[langchain]
 ```
 
+Other extras: `crewai`, `claude-agent-sdk`, `langgraph`, `autogen`, `openai-agents`, `postgres` (for `PostgresAuditStore`) — mix and match, e.g. `pip install aiactguard[langgraph,postgres]`.
+
 ## Quickstart
 
 ```python
@@ -36,7 +38,7 @@ guard = AIActGuardCallbackHandler(
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/](https://github.com/NavikkumarModi/AIActGuard/tree/main/examples) for full runnable examples: [LangChain](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py), [CrewAI](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/crewai_quickstart.py), [Claude Agent SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/claude_agent_sdk_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/red_team_scan.py), [a fairness scan](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/incident_and_transparency_reports.py), [composite-system risk aggregation](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/composite_risk_pipeline.py), [NIST/ISO mappings](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_mappings.py), and [a worked community plugin](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/plugins/example_gxp_plugin.py).
+See [examples/](https://github.com/NavikkumarModi/AIActGuard/tree/main/examples) for full runnable examples: [LangChain](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py), [CrewAI](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/crewai_quickstart.py), [Claude Agent SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/claude_agent_sdk_quickstart.py), [LangGraph](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langgraph_quickstart.py) (using LangGraph's own `interrupt()` for human-in-the-loop), [AutoGen](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/autogen_quickstart.py), [OpenAI Agents SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/openai_agents_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/red_team_scan.py), [a fairness scan](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/incident_and_transparency_reports.py), [composite-system risk aggregation](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/composite_risk_pipeline.py), [NIST/ISO mappings](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_mappings.py), [using the Postgres storage backend](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/postgres_backend.py), and [a worked community plugin](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/plugins/example_gxp_plugin.py).
 
 ## Module roadmap
 
@@ -47,10 +49,10 @@ All 19 modules from the original project plan are built — see [Scope](https://
 | # | Module | Article(s) | What it does | Status |
 |---|---|---|---|---|
 | 1 | Risk classification engine | Art. 6, Annex III | Tags each agent action/tool call against EU AI Act risk tiers using a configurable taxonomy across all eight Annex III high-risk categories | ✅ |
-| 2 | Immutable audit trail | Art. 12 | Every decision, tool call, input/output, model version, and timestamp logged to an append-only store | ✅ |
+| 2 | Immutable audit trail | Art. 12 | Every decision, tool call, input/output, model version, and timestamp logged to an append-only store — SQLite by default, [Postgres](https://github.com/NavikkumarModi/AIActGuard/blob/main/aiactguard/storage/postgres_store.py) for production | ✅ |
 | 3 | Human-in-the-loop approval gates | Art. 14 | Configurable interrupt points that pause execution before a high-risk action fires, with an escalation chain of approvers and reasoned-override logging | ✅ |
 | 4 | Explainability capture | Art. 13 | Structures the agent's chain-of-thought/tool-selection rationale into an auditor-readable format | ✅ |
-| 5 | Framework adapters | — | LangChain ✅, CrewAI ✅, Claude Agent SDK ✅ — LangGraph, AutoGen, OpenAI Agents SDK pending | 🚧 |
+| 5 | Framework adapters | — | LangChain, CrewAI, Claude Agent SDK, LangGraph, AutoGen, OpenAI Agents SDK — all 6 | ✅ |
 | 6 | Policy-as-code | — | YAML rules defining what counts as high-risk for a given org and what triggers a human gate | ✅ |
 
 ### Documentation & assessment tooling (Phase 2)
