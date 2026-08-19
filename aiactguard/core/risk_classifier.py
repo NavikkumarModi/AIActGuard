@@ -70,17 +70,40 @@ class RiskClassifier:
     def classify(self, category: str, text: Optional[str] = None) -> RiskTier:
         """Classify by explicit Annex III category, falling back to keyword
         matching in `text` when the category isn't in the taxonomy."""
+        _, tier = self.classify_with_confidence(category, text)
+        return tier
+
+    def classify_with_confidence(self, category: str, text: Optional[str] = None) -> tuple[float, RiskTier]:
+        """Same classification as `classify()`, plus a confidence score for
+        which rule fired. This is rule-match strength, NOT a calibrated
+        probability that the action is actually risky — this classifier is
+        pure keyword/category matching with no trained model behind it, and
+        the score should never be presented as one:
+
+        - Explicit category match: 1.0 — a deterministic, declared rule,
+          not a guess.
+        - Keyword substring match: 0.6, +0.05 per additional distinct
+          keyword matched, capped at 0.85 — weaker evidence than an
+          explicit declaration (a substring can false-positive), so it's
+          bounded below that ceiling regardless of how many keywords hit.
+        - No rule fired at all (fell through to the default tier): 0.0 —
+          the classifier found no evidence either way. This is the
+          important case to keep honest: a confident-looking default here
+          would hide exactly the blind spot worth flagging for review.
+        """
         for entry in self._entries:
             if entry.category == category:
-                return entry.risk_tier
+                return 1.0, entry.risk_tier
 
         if text:
             lowered = text.lower()
             for entry in self._entries:
-                if any(keyword.lower() in lowered for keyword in entry.keywords):
-                    return entry.risk_tier
+                matched = [kw for kw in entry.keywords if kw.lower() in lowered]
+                if matched:
+                    confidence = min(0.85, 0.6 + 0.05 * (len(matched) - 1))
+                    return confidence, entry.risk_tier
 
-        return self._default_tier
+        return 0.0, self._default_tier
 
     def categories(self) -> list[str]:
         return [entry.category for entry in self._entries]

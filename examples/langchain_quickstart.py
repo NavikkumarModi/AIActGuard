@@ -10,6 +10,7 @@ from langchain_openai import ChatOpenAI
 
 from aiactguard.adapters.langchain_adapter import AIActGuardCallbackHandler
 from aiactguard.core.approval import ApprovalContext, ApprovalDecision
+from aiactguard.policy.schema import PolicyConfig
 
 
 @tool
@@ -31,12 +32,19 @@ def prompt_approver(ctx: ApprovalContext) -> ApprovalDecision:
     return ApprovalDecision(approved=approved, approver_id="cli-operator")
 
 
+# Register the tool's exposure class for retrospective audit — how bad it
+# is if this specific action turns out to have been wrong. There's no
+# default; an unregistered action just logs action_exposure_class=None.
+policy = PolicyConfig.default()
+policy.register_action("check_loan_eligibility", "irreversible_financial")
+
 # essential_services is a high-risk Annex III category by default, so this
 # gate requires human approval before the tool call fires. `approvers` is
 # an escalation chain — add a second approver here to route to a fallback
 # if the first declines to decide (returns None).
 guard = AIActGuardCallbackHandler(
     category="essential_services",
+    policy=policy,
     approvers=[prompt_approver],
 )
 

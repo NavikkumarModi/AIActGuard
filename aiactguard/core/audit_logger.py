@@ -35,6 +35,11 @@ class AuditLogger:
         override: bool = False,
         reason: Optional[str] = None,
         rationale: Optional[list[dict[str, Any]]] = None,
+        classifier_confidence: Optional[float] = None,
+        action_exposure_class: Optional[str] = None,
+        selected_route: Optional[str] = None,
+        audit_sampled: Optional[bool] = None,
+        outcome_reward_proxy: Optional[float] = None,
     ) -> AuditRecord:
         record = AuditRecord(
             action=action,
@@ -50,6 +55,11 @@ class AuditLogger:
             override=override,
             reason=reason,
             rationale=rationale,
+            classifier_confidence=classifier_confidence,
+            action_exposure_class=action_exposure_class,
+            selected_route=selected_route,
+            audit_sampled=audit_sampled,
+            outcome_reward_proxy=outcome_reward_proxy,
         )
         self._store.write(record)
         return record

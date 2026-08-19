@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
@@ -22,6 +23,23 @@ class ApprovalRequired(RuntimeError):
     """Raised when an action requires human approval but no approver is configured."""
 
 
+class ActionExposureClass(str, Enum):
+    """How consequential an action's effects are if it turns out to have
+    been wrong — set once per action at registration time, never inferred
+    at runtime. Distinct from risk_tier: a `reversible_read` action can
+    still classify as `high` risk (e.g. reading biometric data), and an
+    `irreversible_financial` action can classify as `minimal` risk if it's
+    outside every configured Annex III category — the two axes answer
+    different questions (how sensitive is this category vs. how bad is it
+    if this specific action was a mistake)."""
+
+    REVERSIBLE_READ = "reversible_read"
+    REVERSIBLE_WRITE = "reversible_write"
+    IRREVERSIBLE_FINANCIAL = "irreversible_financial"
+    IRREVERSIBLE_DATA = "irreversible_data"
+    IRREVERSIBLE_EXTERNAL_COMMS = "irreversible_external_comms"
+
+
 @dataclass
 class GateRule:
     min_risk_tier: RiskTier
@@ -35,6 +53,7 @@ class PolicyConfig:
     triggers a human-approval gate (Art. 14)."""
 
     gate_rules: list[GateRule]
+    action_exposure_classes: dict[str, ActionExposureClass] = field(default_factory=dict)
 
     @classmethod
     def from_yaml(cls, path: Optional[Union[str, Path]] = None) -> "PolicyConfig":
@@ -50,7 +69,30 @@ class PolicyConfig:
             )
             for rule in raw.get("gate_rules", [])
         ]
-        return cls(gate_rules=rules)
+        config = cls(gate_rules=rules)
+        for action, exposure_class in (raw.get("actions") or {}).items():
+            config.register_action(action, exposure_class)
+        return config
+
+    def register_action(self, action: str, exposure_class: str) -> None:
+        """Register an action's exposure class. `exposure_class` has no
+        default — omitting it is a TypeError, and an unrecognized value
+        raises ValueError, by design: there is no safe silent default for
+        how consequential an action's effects are."""
+        try:
+            parsed = ActionExposureClass(exposure_class)
+        except ValueError:
+            allowed = ", ".join(e.value for e in ActionExposureClass)
+            raise ValueError(
+                f"Action '{action}' must be registered with a valid exposure_class, "
+                f"one of: {allowed}. Got: {exposure_class!r}"
+            ) from None
+        self.action_exposure_classes[action] = parsed
+
+    def exposure_class_for(self, action: str) -> Optional[ActionExposureClass]:
+        """None means the action was never registered — an honest 'not
+        declared', not a silently-assumed default."""
+        return self.action_exposure_classes.get(action)
 
     @classmethod
     def default(cls) -> "PolicyConfig":

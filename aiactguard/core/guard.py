@@ -17,6 +17,7 @@ class GuardEvaluation:
     gated: bool
     risk_tier: RiskTier
     decision: Optional[ApprovalDecision] = None
+    classifier_confidence: float = 0.0
 
     @property
     def denial_reason(self) -> Optional[str]:
@@ -70,11 +71,15 @@ class GuardCore:
         text_for_classification: Optional[str] = None,
         inputs: Optional[dict[str, Any]] = None,
     ) -> GuardEvaluation:
-        risk_tier = self.classifier.classify(self.category, text=text_for_classification)
+        confidence, risk_tier = self.classifier.classify_with_confidence(
+            self.category, text=text_for_classification
+        )
         rule = self.policy.matching_rule(category=self.category, risk_tier=risk_tier)
 
         if rule is None:
-            return GuardEvaluation(approved=True, gated=False, risk_tier=risk_tier)
+            return GuardEvaluation(
+                approved=True, gated=False, risk_tier=risk_tier, classifier_confidence=confidence
+            )
 
         context = ApprovalContext(
             action=action, category=self.category, risk_tier=risk_tier, payload=inputs or {}
@@ -91,7 +96,13 @@ class GuardCore:
                 override=True,
             )
 
-        return GuardEvaluation(approved=approved, gated=True, risk_tier=risk_tier, decision=decision)
+        return GuardEvaluation(
+            approved=approved,
+            gated=True,
+            risk_tier=risk_tier,
+            decision=decision,
+            classifier_confidence=confidence,
+        )
 
     def log(
         self,
@@ -101,8 +112,10 @@ class GuardCore:
         inputs: Optional[dict[str, Any]] = None,
         outputs: Optional[str] = None,
         rationale: Optional[list[dict[str, Any]]] = None,
+        selected_route: Optional[str] = None,
     ) -> GuardOutcome:
         decision = evaluation.decision
+        exposure_class = self.policy.exposure_class_for(action)
         record = self.logger.log(
             action=action,
             category=self.category,
@@ -117,6 +130,9 @@ class GuardCore:
             override=decision.override if decision else False,
             reason=decision.reason if decision else None,
             rationale=rationale,
+            classifier_confidence=evaluation.classifier_confidence,
+            action_exposure_class=exposure_class.value if exposure_class else None,
+            selected_route=selected_route,
         )
         return GuardOutcome(
             approved=evaluation.approved,
@@ -134,10 +150,13 @@ class GuardCore:
         inputs: Optional[dict[str, Any]] = None,
         outputs: Optional[str] = None,
         rationale: Optional[list[dict[str, Any]]] = None,
+        selected_route: Optional[str] = None,
         raise_on_denied: bool = True,
     ) -> GuardOutcome:
         evaluation = self.evaluate(action=action, text_for_classification=text_for_classification, inputs=inputs)
-        outcome = self.log(evaluation, action=action, inputs=inputs, outputs=outputs, rationale=rationale)
+        outcome = self.log(
+            evaluation, action=action, inputs=inputs, outputs=outputs, rationale=rationale, selected_route=selected_route
+        )
 
         if evaluation.gated and not evaluation.approved and raise_on_denied:
             raise ApprovalRequired(

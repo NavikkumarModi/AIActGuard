@@ -5,3 +5,14 @@ gate_rules:
   - min_risk_tier: high
     categories: []   # empty list = applies to every Annex III category
     require_reason_on_override: true   # an approver overriding a denial must say why
+
+# Optional: register each action's exposure class for retrospective audit
+# (how bad is it if this specific action turns out to have been wrong —
+# distinct from risk_tier, which is about the category's sensitivity).
+# No default is applied to an unregistered action; it logs as null.
+# Allowed values: reversible_read, reversible_write, irreversible_financial,
+# irreversible_data, irreversible_external_comms
+#
+# actions:
+#   check_loan_eligibility: irreversible_financial
+#   summarize_document: reversible_read

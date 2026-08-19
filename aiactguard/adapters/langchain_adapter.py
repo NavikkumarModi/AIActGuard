@@ -28,11 +28,22 @@ class AIActGuardCallbackHandler(BaseCallbackHandler):
     rationale (Art. 13) on the corresponding audit record.
 
     Usage:
+        policy = PolicyConfig.default()
+        policy.register_action("check_loan_eligibility", "irreversible_financial")
+
         guard = AIActGuardCallbackHandler(
             category="essential_services",
+            policy=policy,
             approvers=[team_lead_approver, compliance_officer_approver],
         )
         agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
+
+    `register_action`'s `exposure_class` has no default — every action you
+    register must declare it explicitly (one of `reversible_read`,
+    `reversible_write`, `irreversible_financial`, `irreversible_data`,
+    `irreversible_external_comms`). An action you never register still
+    works — it just logs `action_exposure_class=None` on its audit
+    records rather than a silently-assumed value.
     """
 
     # LangChain's CallbackManager swallows exceptions raised inside a

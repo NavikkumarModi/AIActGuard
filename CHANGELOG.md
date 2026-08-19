@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.4] — 2026-08-09
+
+### Added
+- Five new fields on every audit record, for retrospective compliance auditing:
+  - `classifier_confidence` — the risk classifier's raw rule-match strength (1.0 for an explicit category declaration, 0.6-0.85 scaled by keyword-match count, 0.0 when no rule fired at all). Explicitly documented as rule-match strength, not a calibrated probability — this classifier is pure keyword/category matching, not a trained model.
+  - `action_exposure_class` — how consequential an action's effects are if it turns out to have been wrong, registered once per action via `PolicyConfig.register_action(action, exposure_class)` (`reversible_read`, `reversible_write`, `irreversible_financial`, `irreversible_data`, `irreversible_external_comms`). No default — omitting it raises, an unregistered action logs `None` rather than a silently-assumed value.
+  - `selected_route` — passthrough for callers with a routing/multi-option selection layer above a single action; unused by any adapter today, since none currently has one.
+  - `audit_sampled`, `outcome_reward_proxy` — reserved, nullable, not yet populated by any logic.
+- `PolicyConfig` gains an `actions:` section in policy YAML for registering exposure classes declaratively, alongside the programmatic `register_action`/`exposure_class_for` API.
+- `RiskClassifier.classify_with_confidence()` — `classify()` is now a thin wrapper over it, unchanged externally.
+- `SQLiteAuditStore` migrates existing databases in place (`ALTER TABLE ADD COLUMN`, nullable) — opening a pre-upgrade database transparently adds the new columns; old rows read back with them as `None`.
+
 ## [0.1.3] — 2026-08-06
 
 ### Added

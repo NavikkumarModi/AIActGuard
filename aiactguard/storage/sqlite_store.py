@@ -23,9 +23,25 @@ CREATE TABLE IF NOT EXISTS audit_log (
     approver_id TEXT,
     override INTEGER NOT NULL DEFAULT 0,
     reason TEXT,
-    rationale TEXT
+    rationale TEXT,
+    classifier_confidence REAL,
+    action_exposure_class TEXT,
+    selected_route TEXT,
+    audit_sampled INTEGER,
+    outcome_reward_proxy REAL
 );
 """
+
+# Columns added after the initial release. Migrated in via ALTER TABLE for
+# any pre-existing database that predates them, so old rows survive
+# untouched (NULL for these) rather than requiring a backfill.
+_MIGRATED_COLUMNS = {
+    "classifier_confidence": "REAL",
+    "action_exposure_class": "TEXT",
+    "selected_route": "TEXT",
+    "audit_sampled": "INTEGER",
+    "outcome_reward_proxy": "REAL",
+}
 
 
 class SQLiteAuditStore(AuditStore):
@@ -37,9 +53,16 @@ class SQLiteAuditStore(AuditStore):
         conn = self._connect()
         try:
             conn.execute(_SCHEMA)
+            self._migrate(conn)
             conn.commit()
         finally:
             conn.close()
+
+    def _migrate(self, conn: sqlite3.Connection) -> None:
+        existing = {row[1] for row in conn.execute("PRAGMA table_info(audit_log)").fetchall()}
+        for name, col_type in _MIGRATED_COLUMNS.items():
+            if name not in existing:
+                conn.execute(f"ALTER TABLE audit_log ADD COLUMN {name} {col_type}")
 
     def _connect(self) -> sqlite3.Connection:
         return sqlite3.connect(self._db_path)
@@ -52,8 +75,10 @@ class SQLiteAuditStore(AuditStore):
                 INSERT INTO audit_log
                     (record_id, timestamp, action, category, risk_tier,
                      inputs, outputs, model_version, approved, gated, error,
-                     approver_id, override, reason, rationale)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     approver_id, override, reason, rationale,
+                     classifier_confidence, action_exposure_class, selected_route,
+                     audit_sampled, outcome_reward_proxy)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     record.record_id,
@@ -71,6 +96,11 @@ class SQLiteAuditStore(AuditStore):
                     int(record.override),
                     record.reason,
                     json.dumps(record.rationale) if record.rationale is not None else None,
+                    record.classifier_confidence,
+                    record.action_exposure_class,
+                    record.selected_route,
+                    None if record.audit_sampled is None else int(record.audit_sampled),
+                    record.outcome_reward_proxy,
                 ),
             )
             conn.commit()
@@ -97,7 +127,9 @@ class SQLiteAuditStore(AuditStore):
         sql = f"""
             SELECT record_id, timestamp, action, category, risk_tier,
                    inputs, outputs, model_version, approved, gated, error,
-                   approver_id, override, reason, rationale
+                   approver_id, override, reason, rationale,
+                   classifier_confidence, action_exposure_class, selected_route,
+                   audit_sampled, outcome_reward_proxy
             FROM audit_log
             {where}
             ORDER BY timestamp DESC
@@ -128,6 +160,11 @@ class SQLiteAuditStore(AuditStore):
                 override=bool(row[12]),
                 reason=row[13],
                 rationale=json.loads(row[14]) if row[14] is not None else None,
+                classifier_confidence=row[15],
+                action_exposure_class=row[16],
+                selected_route=row[17],
+                audit_sampled=None if row[18] is None else bool(row[18]),
+                outcome_reward_proxy=row[19],
             )
             for row in rows
         ]
