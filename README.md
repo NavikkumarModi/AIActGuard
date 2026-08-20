@@ -16,9 +16,9 @@ Every open-source agent framework is well-served at the orchestration layer. Non
 
 ---
 
-![A gated tool call through the LangChain adapter: the gate fires, an approver decides, an audit record is written, and a conformity checklist is generated from it.](https://github.com/NavikkumarModi/AIActGuard/blob/main/assets/demo.gif?raw=true)
+![Two gated tool calls through the LangChain adapter: one applicant is reviewed and approved, a second is reviewed and denied — the tool never executes for the denied call — and a conformity checklist is generated from both audit records.](https://github.com/NavikkumarModi/AIActGuard/blob/main/assets/demo.gif?raw=true)
 
-*Recorded from [examples/demo.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/demo.py) — real code, real gate decision, real audit record, real report generated from it. Two things are staged for the recording, not faked: the pacing between lines, and the approver — it's a canned function playing the reviewer's role so the recording doesn't sit waiting on a keypress, not a live human typing an answer. See [examples/langchain_quickstart.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py) for the `input()`-driven version an actual reviewer would use.*
+*Recorded from [examples/demo.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/demo.py) — real code, real gate decisions (one approval, one denial), real audit records, real report generated from both. The denial scenario shows LangChain's own internal warning when the callback raises — that's the block genuinely propagating through LangChain's real machinery, not this script claiming it worked. Two things are staged for the recording, not faked: the pacing between lines, and the approvers — canned functions playing the reviewer's role so the recording doesn't sit waiting on a keypress, not a live human typing an answer. See [examples/langchain_quickstart.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py) for the `input()`-driven version an actual reviewer would use.*
 
 ---
 

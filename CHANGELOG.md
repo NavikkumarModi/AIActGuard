@@ -9,6 +9,7 @@ All notable changes to this project are documented here. Format loosely follows 
 
 ### Changed
 - README restructured to match this account's other repos' conventions: centered header with nav links, concrete-count badges (tests passing, not a vague status badge), a mermaid architecture diagram, `[!IMPORTANT]`/`[!NOTE]` callouts for Scope and the confidence-score caveat, and an exact reproduction section (clone/install/pytest commands). No emoji. Content unchanged — this is a structural pass, not new claims.
+- `examples/demo.py` extended to two scenarios (an approved call, then a denied one) instead of only the happy path — the original only showed logging, not the tool actually being blocked, which was the unclear part. The denial scenario deliberately keeps LangChain's own internal warning visible when the callback raises, rather than suppressing it, since that's real evidence the block propagates through LangChain's machinery. Re-recorded `assets/demo.gif`/`assets/demo.cast` accordingly (~34s, up from ~18s).
 
 ## [0.1.4] — 2026-08-09
 
