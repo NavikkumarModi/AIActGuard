@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.5] — 2026-08-20
+
+### Added
+- `examples/demo.py` and a recorded GIF (`assets/demo.gif`) embedded at the top of the README — a real, live-executed run (gate fires, an approver decides, an audit record is written, a conformity checklist is generated from it), not a mockup. Recorded with `asciinema`/`agg`.
+
 ## [0.1.4] — 2026-08-09
 
 ### Added
