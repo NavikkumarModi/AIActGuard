@@ -7,6 +7,9 @@ All notable changes to this project are documented here. Format loosely follows 
 ### Added
 - `examples/demo.py` and a recorded GIF (`assets/demo.gif`) embedded at the top of the README — a real, live-executed run (gate fires, an approver decides, an audit record is written, a conformity checklist is generated from it), not a mockup. Recorded with `asciinema`/`agg`.
 
+### Changed
+- README restructured to match this account's other repos' conventions: centered header with nav links, concrete-count badges (tests passing, not a vague status badge), a mermaid architecture diagram, `[!IMPORTANT]`/`[!NOTE]` callouts for Scope and the confidence-score caveat, and an exact reproduction section (clone/install/pytest commands). No emoji. Content unchanged — this is a structural pass, not new claims.
+
 ## [0.1.4] — 2026-08-09
 
 ### Added
