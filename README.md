@@ -10,9 +10,9 @@ AIActGuard is a lightweight middleware layer that any existing agent stack can a
 
 > Each module logs, drafts, tests, or flags something concrete. None of them certify compliance on their own — that's a legal determination. See [Scope](https://github.com/NavikkumarModi/AIActGuard#scope) below.
 
-![A gated tool call through the LangChain adapter: the gate fires, an approver decides, an audit record is written, and a conformity checklist is generated from it — all real, live-executed output.](https://github.com/NavikkumarModi/AIActGuard/blob/main/assets/demo.gif?raw=true)
+![A gated tool call through the LangChain adapter: the gate fires, an approver decides, an audit record is written, and a conformity checklist is generated from it.](https://github.com/NavikkumarModi/AIActGuard/blob/main/assets/demo.gif?raw=true)
 
-*Recorded from [examples/demo.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/demo.py) — real code, real gate decision, real audit record. The only scripted part is the pacing between lines.*
+*Recorded from [examples/demo.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/demo.py) — real code, real gate decision, real audit record, real report generated from it. Two things are staged for the recording, not faked: the pacing between lines, and the approver — it's a canned function playing the reviewer's role so the recording doesn't sit waiting on a keypress, not a live human typing an answer. See [examples/langchain_quickstart.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py) for the `input()`-driven version an actual reviewer would use.*
 
 ## Install
 
