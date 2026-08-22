@@ -32,7 +32,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        run: pip install -e ".[langchain,crewai,claude-agent-sdk,langgraph,autogen,openai-agents,postgres,dev]"
+        run: pip install -e ".[langchain,crewai,claude-agent-sdk,langgraph,autogen,openai-agents,postgres,audit-priority,dev]"
       - name: Run tests
         env:
           AIACTGUARD_TEST_POSTGRES_DSN: postgresql://aiactguard:aiactguard@localhost:5432/aiactguard_test

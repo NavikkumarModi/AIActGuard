@@ -6,7 +6,7 @@
 git clone https://github.com/NavikkumarModi/AIActGuard.git
 cd AIActGuard
 python3 -m venv .venv
-.venv/bin/pip install -e ".[langchain,crewai,claude-agent-sdk,langgraph,autogen,openai-agents,postgres,dev]"
+.venv/bin/pip install -e ".[langchain,crewai,claude-agent-sdk,langgraph,autogen,openai-agents,postgres,audit-priority,dev]"
 ```
 
 ## Running tests

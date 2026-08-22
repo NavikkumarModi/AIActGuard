@@ -10,7 +10,7 @@ Every open-source agent framework is well-served at the orchestration layer. Non
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://github.com/NavikkumarModi/AIActGuard/blob/main/pyproject.toml)
 [![tests](https://img.shields.io/badge/tests-117%20passing-brightgreen)](https://github.com/NavikkumarModi/AIActGuard/blob/main/.github/workflows/ci.yml)
 
-[Install](#install) · [Quickstart](#quickstart) · [Why this exists](#why-this-exists) · [Module roadmap](#module-roadmap) · [Scope](#scope) · [Running the tests](#running-the-tests) · [Contributing](#contributing)
+[Install](#install) · [Quickstart](#quickstart) · [Why this exists](#why-this-exists) · [Module roadmap](#module-roadmap) · [Audit prioritization & drift diagnostics](#audit-prioritization--drift-diagnostics) · [Scope](#scope) · [Running the tests](#running-the-tests) · [Contributing](#contributing)
 
 </div>
 
@@ -28,7 +28,7 @@ Every open-source agent framework is well-served at the orchestration layer. Non
 pip install aiactguard[langchain]
 ```
 
-Other extras: `crewai`, `claude-agent-sdk`, `langgraph`, `autogen`, `openai-agents`, `postgres` (for `PostgresAuditStore`) — mix and match, e.g. `pip install aiactguard[langgraph,postgres]`.
+Other extras: `crewai`, `claude-agent-sdk`, `langgraph`, `autogen`, `openai-agents`, `postgres` (for `PostgresAuditStore`), `audit-priority` (for the [audit prioritization & drift diagnostics](#audit-prioritization--drift-diagnostics) module) — mix and match, e.g. `pip install aiactguard[langgraph,postgres]`.
 
 Verify it installed correctly:
 
@@ -56,7 +56,7 @@ guard = AIActGuardCallbackHandler(
 agent_executor.invoke({"input": "..."}, config={"callbacks": [guard]})
 ```
 
-See [examples/](https://github.com/NavikkumarModi/AIActGuard/tree/main/examples) for full runnable examples: [LangChain](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py), [CrewAI](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/crewai_quickstart.py), [Claude Agent SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/claude_agent_sdk_quickstart.py), [LangGraph](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langgraph_quickstart.py) (using LangGraph's own `interrupt()` for human-in-the-loop), [AutoGen](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/autogen_quickstart.py), [OpenAI Agents SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/openai_agents_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/red_team_scan.py), [a fairness scan](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/incident_and_transparency_reports.py), [composite-system risk aggregation](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/composite_risk_pipeline.py), [NIST/ISO mappings](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_mappings.py), [using the Postgres storage backend](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/postgres_backend.py), [a worked community plugin](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/plugins/example_gxp_plugin.py), and [the script that recorded the demo above](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/demo.py).
+See [examples/](https://github.com/NavikkumarModi/AIActGuard/tree/main/examples) for full runnable examples: [LangChain](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langchain_quickstart.py), [CrewAI](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/crewai_quickstart.py), [Claude Agent SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/claude_agent_sdk_quickstart.py), [LangGraph](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/langgraph_quickstart.py) (using LangGraph's own `interrupt()` for human-in-the-loop), [AutoGen](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/autogen_quickstart.py), [OpenAI Agents SDK](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/openai_agents_quickstart.py), the framework-agnostic [`@watch` decorator with an escalation chain + override](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/watch_with_escalation.py), [generating all five Phase 2 compliance reports](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_reports.py) from an audit trail, [running the red-team scenario harness](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/red_team_scan.py), [a fairness scan](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/fairness_scan.py), [drafting an incident report + GPAI transparency card](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/incident_and_transparency_reports.py), [composite-system risk aggregation](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/composite_risk_pipeline.py), [NIST/ISO mappings](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/generate_mappings.py), [using the Postgres storage backend](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/postgres_backend.py), [a worked community plugin](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/plugins/example_gxp_plugin.py), [the script that recorded the demo above](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/demo.py), and [audit prioritization + the drift diagnostic report](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/audit_priority_demo.py).
 
 ## Why this exists
 
@@ -119,6 +119,20 @@ All 19 modules from the original project plan are built.
 | 17 | NIST AI RMF mapping layer | Maps audit/risk data to NIST AI RMF's Govern/Map/Measure/Manage functions |
 | 18 | ISO/IEC 42001 mapping layer | Maps the same data to ISO 42001 AI management system clauses |
 | 19 | Plugin architecture for community modules | Defined interface for jurisdiction- or industry-specific community modules |
+
+## Audit prioritization & drift diagnostics
+
+Additional scope beyond the 19 modules above, contributed from the user's own research on adaptively-routed agent systems (paper forthcoming — no citation added yet since it isn't posted).
+
+The research's core statistical method is an anytime-valid confidence sequence over a bin's true violation rate, built from accumulating human audit findings. The research itself also describes using that method to *automatically stop requiring approval* for certain actions once the statistics say a context is safe enough. AIActGuard deliberately does not implement that part — every gate here always defers to a human, with no exception. What's built instead is the same statistical method repurposed for two things that never remove a human from a decision:
+
+- **`aiactguard.audit_priority`** — ranks pending/completed audit records by how statistically uncertain the evidence still is for their confidence bin, so a compliance reviewer works down a prioritized list instead of reviewing randomly or chronologically. A bin nobody's reviewed yet ranks at the top by default; a bin with enough accumulated evidence of being safe ranks lower automatically as that evidence comes in.
+- **`aiactguard.reports.drift_diagnostic`** — a monitoring report (not a gate) decomposing where "silent risk mass" concentrates across confidence bins, and checking whether the agent shows an elevated preference for high-exposure actions specifically in bins the classifier tends to miss.
+
+Both require ground-truth findings from actual human review (`aiactguard.audit_priority.findings.AuditFindingStore`) to produce anything beyond "not enough evidence yet" — see [examples/audit_priority_demo.py](https://github.com/NavikkumarModi/AIActGuard/blob/main/examples/audit_priority_demo.py) for a full worked example. Requires `pip install aiactguard[audit-priority]`.
+
+> [!NOTE]
+> The confidence-sequence computation is ported from the [`confseq`](https://github.com/gostevehoward/confseq) package (MIT license, Steve Howard with Ian Waudby-Smith and Aaditya Ramdas) — only the one code path this module needs, not the full library. The published PyPI package requires a compiled CMake build that failed on the machine this was built on and can't be relied on to install cleanly for everyone; this path is pure NumPy.
 
 ## Scope
 

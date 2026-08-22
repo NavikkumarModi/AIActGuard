@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.6] — 2026-08-22
+
+### Added
+- `aiactguard.audit_priority` — ranks audit records by how statistically uncertain the evidence still is for their confidence bin (an anytime-valid confidence sequence built from accumulating human audit findings via the new `AuditFindingStore`), so a reviewer works down a prioritized list instead of reviewing randomly. Never approves, blocks, or skips review for anything — deliberately narrower than the research it's drawn from, which also describes using the same statistics to auto-unblock actions; that part is not implemented here.
+- `aiactguard.reports.drift_diagnostic` — a monitoring report decomposing where "silent risk mass" concentrates across confidence bins and checking for elevated high-exposure-action rates specifically in bins the classifier tends to miss. Diagnostic only, not a guarantee; bins with too few findings are flagged insufficient data rather than given a fabricated rate.
+- New `audit-priority` extra (`numpy`). The confidence-sequence computation is ported from `confseq` (MIT license, github.com/gostevehoward/confseq) — only the one code path needed, verified against a hand-computed example and a synthetic above/below-threshold scenario. Not the published PyPI `confseq` package: that requires a compiled CMake build that failed on the development machine, so vendoring the specific pure-NumPy path was the more reliable choice.
+- `examples/audit_priority_demo.py`.
+
 ## [0.1.5] — 2026-08-20
 
 ### Added
