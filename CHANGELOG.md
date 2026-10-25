@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format loosely follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.1.7] — 2026-10-25
+
+### Changed
+- Declared Python 3.13 in the package classifiers and added it to the CI test matrix (3.10, 3.12, 3.13). Metadata and test coverage only; no code changes. AIActGuard itself is a pure-Python wheel, so the classifier does not affect which wheels pip selects.
+
 ## [0.1.6] — 2026-08-22
 
 ### Added
